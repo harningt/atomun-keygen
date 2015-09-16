@@ -1,0 +1,70 @@
+import org.ajoberstar.gradle.git.release.opinion.Strategies
+
+plugins {
+    id 'java'
+    id 'groovy'
+    id 'maven'
+    id 'org.ajoberstar.release-opinion' version '1.3.0'
+    id 'org.ajoberstar.defaults' version '0.5.2'
+    id 'checkstyle'
+    id 'findbugs'
+}
+
+group = 'us.eharning.atomun'
+description = 'Utility library implementing key generation.'
+sourceCompatibility = 1.7
+
+defaults {
+    id = 'harningt'
+
+    developers = [
+            [id: 'harningt', name: 'Thomas Harning Jr', email: 'harningt@gmail.com']
+    ]
+
+    // used by license plugin
+    copyrightYears = '2015'
+}
+
+release {
+    // Adds SNAPSHOT strategy to allowed list to be used by Travis-CI
+    versionStrategy Strategies.SNAPSHOT
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    findbugs 'com.google.code.findbugs:findbugs:3.0.0'
+
+    compile group: 'com.google.guava', name: 'guava', version: '18.0'
+    compile 'com.google.code.findbugs:annotations:3.0.0'
+    compile 'com.google.code.findbugs:jsr305:3.0.0'
+
+    compile 'org.bouncycastle:bcprov-jdk15on:1.52'
+
+    testCompile 'org.codehaus.groovy:groovy:2.4.1'
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+    testCompile 'net.trajano.caliper:caliper:1.2.1'
+}
+
+checkstyle {
+    /* Using checkstyle 6.10.1 as that is the maximum for the IntelliJ extensions */
+    toolVersion = '6.10.1'
+    configFile = new File(rootDir, 'gradle/checkstyle/checkstyle.xml')
+}
+
+findbugs {
+    sourceSets = [ sourceSets.main ]
+}
+
+javadoc {
+    options.tags "todo:a:TODO:"
+}
+
+apply from: "$rootDir/gradle/maven-publish.gradle"
+
+wrapper {
+    gradleVersion = '2.7'
+}
