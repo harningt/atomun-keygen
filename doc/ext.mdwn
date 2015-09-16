@@ -1,0 +1,7 @@
+# External Documents
+
+Captured at revision a0837d35c65b4165f472a7e7af70b4f98722e50c from https://github.com/bitcoin/bips:
+
+* bip0032.mediawiki
+* bip0043.mediawiki
+* bip0044.mediawiki
