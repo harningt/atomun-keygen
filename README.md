@@ -23,6 +23,9 @@ Public APIs not marked with @Beta are considered under the purview of the versio
 > Do not rely on this to exist in the future as it is not "API-frozen".
 > It may change functionality or be removed in any future release.
 
+Public APIs inside the us.eharning.atomun.keygen.internal namespace are not
+considered 'public' per the versioning rules.
+
 ## License
 
 This library is covered under the [Apache 2.0 license][Apache2.0] as indicated in the LICENSE file.
