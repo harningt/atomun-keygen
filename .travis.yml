@@ -10,8 +10,13 @@ cache:
         - $HOME/.m2
         - $HOME/.gradle/wrapper
 
+before_insall:
+    - test ${TRAVIS_SECURE_ENV_VARS} == true && gpg -d --passphrase $GRADLE_SECRET_KEY < gradle/private.tar.gz.travis-gpg | tar -xz -C $HOME || true
+install: ''
 script:
     - TERM=dumb ./gradlew clean check
+after_succes: |
+    test ${TRAVIS_SECURE_ENV_VARS} == true && test ${TRAVIS_BRANCH} = develop && test ${TRAVIS_PULL_REQUEST} = false && ./gradlew -P release.stage=SNAPSHOT -P sign=TRUE -P signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg uploadArchives || false
 
 notifications:
     webhooks:
