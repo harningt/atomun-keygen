@@ -18,7 +18,7 @@ package us.eharning.atomun.keygen.internal.spi.bip0032;
 
 import com.google.common.base.Objects;
 import com.google.common.primitives.Ints;
-import us.eharning.atomun.keygen.base.ECKey;
+import us.eharning.atomun.core.ec.ECKey;
 
 import java.util.Arrays;
 import javax.annotation.Nonnull;

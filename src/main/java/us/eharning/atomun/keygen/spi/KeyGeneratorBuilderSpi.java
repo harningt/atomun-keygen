@@ -18,9 +18,9 @@ package us.eharning.atomun.keygen.spi;
 
 import com.google.common.annotations.Beta;
 import com.google.common.base.Preconditions;
+import us.eharning.atomun.core.ValidationException;
 import us.eharning.atomun.keygen.DeterministicKeyGenerator;
 import us.eharning.atomun.keygen.KeyGeneratorAlgorithm;
-import us.eharning.atomun.keygen.base.ValidationException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;

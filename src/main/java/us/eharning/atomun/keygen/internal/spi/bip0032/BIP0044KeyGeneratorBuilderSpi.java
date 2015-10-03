@@ -17,12 +17,12 @@
 package us.eharning.atomun.keygen.internal.spi.bip0032;
 
 import com.google.common.base.Preconditions;
+import us.eharning.atomun.core.ValidationException;
 import us.eharning.atomun.keygen.ByteArraySeedParameter;
 import us.eharning.atomun.keygen.DeterministicKeyGenerator;
 import us.eharning.atomun.keygen.SeedParameter;
 import us.eharning.atomun.keygen.SerializedSeedParameter;
 import us.eharning.atomun.keygen.StandardKeyGeneratorAlgorithm;
-import us.eharning.atomun.keygen.base.ValidationException;
 import us.eharning.atomun.keygen.path.BIP0032Path;
 import us.eharning.atomun.keygen.path.BIP0044Path;
 import us.eharning.atomun.keygen.spi.BuilderParameter;

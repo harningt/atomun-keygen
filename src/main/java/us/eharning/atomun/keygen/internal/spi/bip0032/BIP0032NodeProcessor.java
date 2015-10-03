@@ -16,7 +16,7 @@
 
 package us.eharning.atomun.keygen.internal.spi.bip0032;
 
-import us.eharning.atomun.keygen.base.ValidationException;
+import us.eharning.atomun.core.ValidationException;
 import us.eharning.atomun.keygen.path.BIP0032Path;
 
 /**
