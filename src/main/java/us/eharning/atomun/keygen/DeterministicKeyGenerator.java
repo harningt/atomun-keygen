@@ -16,8 +16,8 @@
 
 package us.eharning.atomun.keygen;
 
-import us.eharning.atomun.keygen.base.ECKey;
-import us.eharning.atomun.keygen.base.ValidationException;
+import us.eharning.atomun.core.ValidationException;
+import us.eharning.atomun.core.ec.ECKey;
 
 import javax.annotation.Nonnull;
 

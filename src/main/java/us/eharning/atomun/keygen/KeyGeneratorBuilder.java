@@ -17,7 +17,7 @@
 package us.eharning.atomun.keygen;
 
 import com.google.common.collect.ImmutableList;
-import us.eharning.atomun.keygen.base.ValidationException;
+import us.eharning.atomun.core.ValidationException;
 import us.eharning.atomun.keygen.internal.spi.bip0032.BIP0032KeyGeneratorServiceProvider;
 import us.eharning.atomun.keygen.internal.spi.bip0032.BIP0044KeyGeneratorServiceProvider;
 import us.eharning.atomun.keygen.spi.BuilderParameter;

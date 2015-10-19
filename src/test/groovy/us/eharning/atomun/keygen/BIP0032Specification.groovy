@@ -19,7 +19,7 @@ import groovy.json.JsonSlurper
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import spock.lang.Specification
 import spock.lang.Unroll
-import us.eharning.atomun.keygen.base.ECKey
+import us.eharning.atomun.core.ec.ECKey
 import us.eharning.atomun.keygen.internal.spi.bip0032.BouncyCastleBIP0032NodeProcessor
 import us.eharning.atomun.keygen.path.BIP0032Path
 

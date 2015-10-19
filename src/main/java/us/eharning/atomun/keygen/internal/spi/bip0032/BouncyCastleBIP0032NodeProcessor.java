@@ -25,8 +25,10 @@ import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.Arrays;
-import us.eharning.atomun.keygen.base.ECKey;
-import us.eharning.atomun.keygen.base.ValidationException;
+import us.eharning.atomun.core.ValidationException;
+import us.eharning.atomun.core.ec.ECKey;
+import us.eharning.atomun.core.ec.ECKeyFactory;
+import us.eharning.atomun.core.encoding.Base58;
 import us.eharning.atomun.keygen.path.BIP0032Path;
 
 import java.math.BigInteger;
@@ -177,9 +179,9 @@ final class BouncyCastleBIP0032NodeProcessor implements BIP0032NodeProcessor {
         byte[] pubOrPriv = Arrays.copyOfRange(data, 13 + 32, data.length);
         ECKey key;
         if (hasPrivate) {
-            key = new BouncyCastleECKeyPair(new BigInteger(1, pubOrPriv), true);
+            key = ECKeyFactory.getInstance().fromSecretExponent(new BigInteger(1, pubOrPriv), true);
         } else {
-            key = new BouncyCastleECPublicKey(pubOrPriv, true);
+            key = ECKeyFactory.getInstance().fromEncodedPublicKey(pubOrPriv, true);
         }
         return new BIP0032Node(key, chainCode, depth, parent, sequence);
     }
@@ -212,7 +214,7 @@ final class BouncyCastleBIP0032NodeProcessor implements BIP0032NodeProcessor {
             if (m.compareTo(curve.getN()) >= 0 || m.compareTo(BigInteger.ZERO) == 0) {
                 throw new ValidationException("Invalid chain value generated");
             }
-            BouncyCastleECKeyPair keyPair = new BouncyCastleECKeyPair(m, true);
+            ECKey keyPair = ECKeyFactory.getInstance().fromSecretExponent(m, true);
             return new BIP0032Node(keyPair, r, 0, 0, 0);
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             throw new ValidationException(e);
@@ -226,7 +228,7 @@ final class BouncyCastleBIP0032NodeProcessor implements BIP0032NodeProcessor {
      */
     @Override
     public BIP0032Node generateNode() {
-        ECKey key = BouncyCastleECKeyPair.createNew(true);
+        ECKey key = ECKeyFactory.getInstance().generateRandom(true);
         byte[] chainCode = new byte[32];
         rnd.nextBytes(chainCode);
         return new BIP0032Node(key, chainCode, 0, 0, 0);
@@ -338,7 +340,7 @@ final class BouncyCastleBIP0032NodeProcessor implements BIP0032NodeProcessor {
                 if (k.compareTo(BigInteger.ZERO) == 0) {
                     throw new ValidationException("Invalid private node generated");
                 }
-                cached = new BIP0032Node(new BouncyCastleECKeyPair(k, true), r, node.getDepth() + 1, node.getFingerPrint(), sequence);
+                cached = new BIP0032Node(ECKeyFactory.getInstance().fromSecretExponent(k, true), r, node.getDepth() + 1, node.getFingerPrint(), sequence);
                 NODE_CACHE.put(nodeSequence, cached);
                 return cached;
             } else {
@@ -348,7 +350,7 @@ final class BouncyCastleBIP0032NodeProcessor implements BIP0032NodeProcessor {
                     throw new ValidationException("Invalid public node generated");
                 }
                 pub = q.getEncoded(true);
-                cached = new BIP0032Node(new BouncyCastleECPublicKey(pub, true), r, node.getDepth() + 1, node.getFingerPrint(), sequence);
+                cached = new BIP0032Node(ECKeyFactory.getInstance().fromEncodedPublicKey(pub, true), r, node.getDepth() + 1, node.getFingerPrint(), sequence);
                 NODE_CACHE.put(nodeSequence, cached);
                 return cached;
             }
@@ -369,7 +371,7 @@ final class BouncyCastleBIP0032NodeProcessor implements BIP0032NodeProcessor {
         if (!node.hasPrivate()) {
             return node;
         }
-        final BouncyCastleECPublicKey master = new BouncyCastleECPublicKey(node.getMaster().exportPublic(), true);
+        final ECKey master = ECKeyFactory.getInstance().fromEncodedPublicKey(node.getMaster().exportPublic(), true);
         return new BIP0032Node(master, node.getChainCode(), node.getDepth(), node.getParent(), node.getSequence());
     }
 

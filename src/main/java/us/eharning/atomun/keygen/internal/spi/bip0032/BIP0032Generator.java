@@ -17,8 +17,8 @@
 package us.eharning.atomun.keygen.internal.spi.bip0032;
 
 import com.google.common.base.Objects;
-import us.eharning.atomun.keygen.base.ECKey;
-import us.eharning.atomun.keygen.base.ValidationException;
+import us.eharning.atomun.core.ValidationException;
+import us.eharning.atomun.core.ec.ECKey;
 import us.eharning.atomun.keygen.internal.HierarchicalKeyGenerator;
 
 import javax.annotation.Nonnull;
