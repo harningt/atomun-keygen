@@ -206,6 +206,27 @@ public class BIP0032Path implements Iterable<Integer>, PathParameter {
         }
 
         /**
+         * Add a new segment to the builder.
+         *
+         * @param segment
+         *         value to store.
+         * @param isHardened
+         *         whether or not the value-to-be-stored should be set as a hardened node.
+         *
+         * @return self to permit chaining.
+         */
+        public Builder addSegment(int segment, boolean isHardened) {
+            assert segment == (segment & ~0x80000000);
+            segment = (segment & ~0x80000000);
+            if (isHardened) {
+                segment |= 0x80000000;
+            }
+            reserve(segmentsLength + 1);
+            setSegment(segmentsLength, segment);
+            return this;
+        }
+
+        /**
          * Load a BIP0032-formatted string, resetting any prior configuration.
          *
          * @param path

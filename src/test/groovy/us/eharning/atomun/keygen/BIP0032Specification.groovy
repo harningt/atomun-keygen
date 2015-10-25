@@ -15,7 +15,6 @@
  */
 package us.eharning.atomun.keygen
 
-import groovy.json.JsonSlurper
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -43,7 +42,6 @@ class BIP0032Specification extends Specification {
     }
     static DeterministicKeyGenerator ekprivate = getRandom()
     static DeterministicKeyGenerator ekpublic = ekprivate.getPublic()
-    static def BIP32 = new JsonSlurper().parse(BIP0032Specification.class.getResource("/BIP32.json"))
 
     def cleanup() {
         System.out.println(BouncyCastleBIP0032NodeProcessor.NODE_CACHE.stats())
@@ -64,59 +62,66 @@ class BIP0032Specification extends Specification {
         [ i ] << ([0..20].iterator())
     }
 
-    def "test serialization"(def key) {
+    def "test serialization"(BIP0032TestData.RootTestCase rootTestCase) {
         given:
-        DeterministicKeyGenerator ekprivate = getFromSeed(key.seed.decodeHex())
+        DeterministicKeyGenerator ekprivate = getFromSeed(rootTestCase.seed)
         DeterministicKeyGenerator ekpublic = ekprivate.getPublic ()
         expect:
-        ekprivate.export() ==  key.private
-        ekprivate.exportPublic() == key.public
-        ekpublic.export() == key.public
+        ekprivate.export() ==  rootTestCase.rootPrivateKey
+        ekprivate.exportPublic() == rootTestCase.rootPublicKey
+        ekpublic.export() == rootTestCase.rootPublicKey
         ekprivate.hasPrivate()
         !ekpublic.hasPrivate()
         where:
-        key << BIP32
+        rootTestCase << BIP0032TestData.ROOT_CASES
     }
-    def "test round trip serialization"(def key) {
+    def "test round trip serialization"(BIP0032TestData.RootTestCase rootTestCase) {
         given:
-        DeterministicKeyGenerator ekprivate = getFromSeed(key.seed.decodeHex())
+        DeterministicKeyGenerator ekprivate = getFromSeed(rootTestCase.seed)
         DeterministicKeyGenerator ekpublic = ekprivate.getPublic ()
         expect:
-        ekprivate.export() ==  key.private
-        ekprivate.exportPublic() == key.public
-        ekpublic.export() == key.public
-        ekprivate == getFromSerialized(key.private)
-        ekpublic == getFromSerialized(key.public)
+        ekprivate.export() ==  rootTestCase.rootPrivateKey
+        ekprivate.exportPublic() == rootTestCase.rootPublicKey
+        ekpublic.export() == rootTestCase.rootPublicKey
+        ekprivate == getFromSerialized(rootTestCase.rootPrivateKey)
+        ekpublic == getFromSerialized(rootTestCase.rootPublicKey)
         where:
-        key << BIP32
+        rootTestCase << BIP0032TestData.ROOT_CASES
     }
 
     @Unroll
-    def "test path-based derivation using builder"(String seed, def derived) {
+    def "test path-based derivation using builder: #testCase.name"(BIP0032TestData.DerivationTestCase testCase) {
         given:
-        def path = BIP0032Path.fromBIP0032String(derived.path)
-        DeterministicKeyGenerator ek = KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setPath(path).setSeed(ByteArraySeedParameter.getParameter(seed.decodeHex())).build()
+        def path = BIP0032Path.fromBIP0032String(testCase.path)
+        DeterministicKeyGenerator ek = KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setPath(path).setSeed(ByteArraySeedParameter.getParameter(testCase.seed)).build()
         DeterministicKeyGenerator ep = ek.getPublic()
         expect:
-        ek.export() == derived.private
-        ek.exportPublic() == derived.public
-        ep.export() == derived.public
+        ek.export() == testCase.privateKey
+        ek.exportPublic() == testCase.publicKey
+        ep.export() == testCase.publicKey
         ek.hasPrivate()
         !ep.hasPrivate()
         where:
-        [ seed, derived ] << getPairs()
+        testCase << BIP0032TestData.ALL_DERIVATION_CASES
     }
 
-    private static def getPairs() {
-        List objects = new ArrayList()
-        for (def key: BIP32) {
-            for (def derived: key.derived) {
-                objects.add([
-                    key.seed,
-                    derived
-                ]);
-            }
+    @Unroll
+    def "test path-based derivation using sequence builder: #testCase.name"(BIP0032TestData.DerivationTestCase testCase) {
+        given:
+        BIP0032Path.Builder pathBuilder = new BIP0032Path.Builder()
+        for (BIP0032TestData.LocatorElement element: testCase.locator) {
+            pathBuilder.addSegment(element.sequence, element.hardened)
         }
-        return objects
+        def path = pathBuilder.build()
+        DeterministicKeyGenerator ek = KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setPath(path).setSeed(ByteArraySeedParameter.getParameter(testCase.seed)).build()
+        DeterministicKeyGenerator ep = ek.getPublic()
+        expect:
+        ek.export() == testCase.privateKey
+        ek.exportPublic() == testCase.publicKey
+        ep.export() == testCase.publicKey
+        ek.hasPrivate()
+        !ep.hasPrivate()
+        where:
+        testCase << BIP0032TestData.ALL_DERIVATION_CASES
     }
 }
