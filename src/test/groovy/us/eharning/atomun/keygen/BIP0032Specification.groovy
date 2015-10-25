@@ -104,4 +104,24 @@ class BIP0032Specification extends Specification {
         where:
         testCase << BIP0032TestData.ALL_DERIVATION_CASES
     }
+
+    @Unroll
+    def "test path-based derivation using sequence builder: #testCase.name"(BIP0032TestData.DerivationTestCase testCase) {
+        given:
+        BIP0032Path.Builder pathBuilder = new BIP0032Path.Builder()
+        for (BIP0032TestData.LocatorElement element: testCase.locator) {
+            pathBuilder.addSegment(element.sequence, element.hardened)
+        }
+        def path = pathBuilder.build()
+        DeterministicKeyGenerator ek = KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setPath(path).setSeed(ByteArraySeedParameter.getParameter(testCase.seed)).build()
+        DeterministicKeyGenerator ep = ek.getPublic()
+        expect:
+        ek.export() == testCase.privateKey
+        ek.exportPublic() == testCase.publicKey
+        ep.export() == testCase.publicKey
+        ek.hasPrivate()
+        !ep.hasPrivate()
+        where:
+        testCase << BIP0032TestData.ALL_DERIVATION_CASES
+    }
 }
