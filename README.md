@@ -104,7 +104,7 @@ concrete instance of [BIP0043](BIP0043Spec) based on the extremely flexible
 
 ### Runtime
 
- * Guava 18.0
+ * Guava 19.0
 
 ### Test
 
