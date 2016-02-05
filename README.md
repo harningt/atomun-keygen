@@ -2,7 +2,7 @@
 
 [![License](http://img.shields.io/badge/license-Apache_2-red.svg)][Apache2.0]
 
-[![Build Status](https://travis-ci.org/harningt/atomun-keygen.svg?branch=develop)](https://travis-ci.org/harningt/atomun-keygen)
+[![Build Status](https://travis-ci.org/harningt/atomun-keygen.svg?branch=develop)](https://travis-ci.org/harningt/atomun-keygen) [![codecov.io](https://codecov.io/github/harningt/atomun-keygen/coverage.svg?branch=develop)](https://codecov.io/github/harningt/atomun-keygen?branch=develop)
 
 Enter [Atomun](https://github.com/harningt/atomun) - the Java Bitcoin utility library collection.
 
@@ -22,6 +22,9 @@ Public APIs not marked with @Beta are considered under the purview of the versio
 
 > Do not rely on this to exist in the future as it is not "API-frozen".
 > It may change functionality or be removed in any future release.
+
+Public APIs inside the us.eharning.atomun.keygen.internal namespace are not
+considered 'public' per the versioning rules.
 
 ## License
 
@@ -101,7 +104,7 @@ concrete instance of [BIP0043](BIP0043Spec) based on the extremely flexible
 
 ### Runtime
 
- * Guava 18.0
+ * Guava 19.0
 
 ### Test
 

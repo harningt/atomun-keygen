@@ -1,0 +1,74 @@
+apply plugin: 'signing'
+
+/* Drop groovydoc from artifacts */
+configurations.archives.artifacts.removeAll({
+       return (it.classifier == 'groovydoc')
+})
+
+/* All non-snapshots must be signed */
+def isRelease = !version.toString().endsWith("SNAPSHOT")
+def isSigning = isRelease
+def isSigningAllowed = hasProperty('sign') && getProperty('sign') == 'TRUE'
+if (isSigningAllowed) {
+    isSigning = true;
+}
+
+def sonatype_user = hasProperty("sonatype_user") ? getProperty("sonatype_user") : null
+def sonatype_password = hasProperty("sonatype_password") ? getProperty("sonatype_password") : null
+if (null != sonatype_user && null != sonatype_password) {
+    signing {
+        required { isSigning && isSigningAllowed }
+        if (isSigning && isSigningAllowed) {
+            sign configurations.archives
+        }
+    }
+}
+
+uploadArchives {
+    configuration = configurations.archives
+    repositories.mavenDeployer {
+        def creds = [
+            userName: sonatype_user,
+            password: sonatype_password
+        ]
+        repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
+            authentication(creds)
+        }
+        snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+            authentication(creds)
+        }
+        pom.project {
+            name name
+            description description
+            url defaults.siteUrl
+            inceptionYear '2015'
+
+            scm {
+                connection 'scm:git:https://github.com/harningt/atomun-keygen.git'
+                developerConnection 'scm:git:git@github.com:harningt/atomun-keygen.git'
+                url 'https://github.com/harningt/atomun-keygen'
+            }
+
+            licenses {
+                license {
+                    name 'Apache License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+            developers {
+                developer {
+                    id 'harningt'
+                    name 'Thomas Harning Jr'
+                    email 'harningt@gmail.com'
+                }
+            }
+        }
+        beforeDeployment { MavenDeployment deployment ->
+            if (isSigning && !isSigningAllowed) {
+                throw new Error("Signing is expected but not allowed. Set '-P sign=TRUE' to continue")
+            }
+            signing.signPom(deployment)
+        }
+    }
+}
