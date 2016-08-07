@@ -4,9 +4,9 @@ plugins {
     id 'java'
     id 'groovy'
     id 'maven'
-    id 'org.ajoberstar.release-opinion' version '1.3.0'
-    id 'org.ajoberstar.defaults' version '0.5.2'
-    id "org.standardout.versioneye" version "1.1.1"
+    id 'org.ajoberstar.release-opinion' version '1.5.1'
+    id 'org.ajoberstar.defaults' version '0.6.0'
+    id "org.standardout.versioneye" version "1.4.0"
     id 'checkstyle'
     id 'findbugs'
 }
@@ -48,20 +48,20 @@ dependencies {
 
     compile 'org.bouncycastle:bcprov-jdk15on:1.54'
 
-    testCompile 'org.codehaus.groovy:groovy:2.4.6'
+    testCompile 'org.codehaus.groovy:groovy:2.4.7'
     testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
     testCompile 'net.trajano.caliper:caliper:1.2.1'
     testCompile 'org.yaml:snakeyaml:1.17'
 }
 
 checkstyle {
-    /* Using checkstyle 6.15 as that is the maximum for the IntelliJ extensions */
-    toolVersion = '6.15'
+    /* Using checkstyle 6.19 as that is the last version of Checkstyle to support JDK7 */
+    toolVersion = '6.19'
     configFile = new File(rootDir, 'gradle/checkstyle/checkstyle.xml')
 }
 
 jacoco {
-    toolVersion = '0.7.6.201602180812'
+    toolVersion = '0.7.7.201606060606'
 }
 
 jacocoTestReport {
@@ -86,5 +86,5 @@ javadoc {
 apply from: "$rootDir/gradle/maven-publish.gradle"
 
 wrapper {
-    gradleVersion = '2.10'
+    gradleVersion = '2.14.1'
 }
