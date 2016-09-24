@@ -32,6 +32,10 @@ defaults {
     copyrightYears = '2016'
 }
 
+license {
+    skipExistingHeaders true
+}
+
 release {
     // Adds SNAPSHOT strategy to allowed list to be used by Travis-CI
     versionStrategy Strategies.SNAPSHOT
