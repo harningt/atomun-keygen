@@ -40,7 +40,7 @@ uploadArchives {
         pom.project {
             name name
             description description
-            url defaults.siteUrl
+            url 'https://github.com/harningt/atomun-keygen'
             inceptionYear '2015'
 
             scm {

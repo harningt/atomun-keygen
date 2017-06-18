@@ -2,7 +2,7 @@ import org.ajoberstar.gradle.git.release.opinion.Strategies
 
 buildscript {
     dependencies {
-        classpath 'net.sf.proguard:proguard-base:5.2.1'
+        classpath "net.sf.proguard:proguard-gradle:5.3.3"
     }
 }
 
@@ -10,31 +10,12 @@ plugins {
     id 'java'
     id 'groovy'
     id 'maven'
-    id 'org.ajoberstar.release-opinion' version '1.5.1'
-    id 'org.ajoberstar.defaults' version '0.6.0'
-    id "org.standardout.versioneye" version "1.4.0"
-    id 'checkstyle'
-    id 'findbugs'
+    id 'us.eharning.gradle.defaults' version '0.1.2'
 }
 
 group = 'us.eharning.atomun'
 description = 'Utility library implementing key generation.'
 sourceCompatibility = 1.8
-
-defaults {
-    id = 'harningt'
-
-    developers = [
-            [id: 'harningt', name: 'Thomas Harning Jr', email: 'harningt@gmail.com']
-    ]
-
-    // used by license plugin
-    copyrightYears = '2016'
-}
-
-license {
-    skipExistingHeaders true
-}
 
 release {
     // Adds SNAPSHOT strategy to allowed list to be used by Travis-CI
@@ -43,7 +24,6 @@ release {
 
 repositories {
     jcenter()
-    mavenCentral()
     //maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
@@ -52,50 +32,32 @@ dependencies {
 
     compile 'us.eharning.atomun:atomun-core:0.0.2'
 
-    compile group: 'com.google.guava', name: 'guava', version: '19.0'
-    compile 'com.google.code.findbugs:annotations:3.0.1'
-    compile 'com.google.code.findbugs:jsr305:3.0.1'
+    /* NOTE: Using the android version due to intended use, consider replacable w/ 22.0 */
+    compile group: 'com.google.guava', name: 'guava', version: '22.0-android'
+    compile 'com.google.code.findbugs:annotations:3.0.1u2'
+    compile 'com.google.code.findbugs:jsr305:3.0.2'
 
-    compile 'org.bouncycastle:bcprov-jdk15on:1.55'
+    compile 'org.bouncycastle:bcprov-jdk15on:1.57'
 
-    testCompile 'org.codehaus.groovy:groovy:2.4.7'
-    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+    testCompile 'org.codehaus.groovy:groovy:2.4.11'
+    testCompile 'org.spockframework:spock-core:1.1-groovy-2.4'
     testCompile 'net.trajano.caliper:caliper:1.2.1'
-    testCompile 'org.yaml:snakeyaml:1.17'
-}
-
-checkstyle {
-    toolVersion = '7.1.1'
-    configFile = new File(rootDir, 'gradle/checkstyle/checkstyle.xml')
-}
-
-jacoco {
-    toolVersion = '0.7.7.201606060606'
-}
-
-jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.destination "${buildDir}/jacocoHtml"
-    }
-}
-
-sonarRunner {
-    toolVersion = '2.4'
-}
-
-findbugs {
-    sourceSets = [ sourceSets.main ]
+    testCompile 'org.yaml:snakeyaml:1.18'
 }
 
 javadoc {
     options.tags "todo:a:TODO:"
 }
 
+versioneye {
+    /* Workaround for Gradle 4 issue */
+    exclude project.configurations.findAll { !it.canBeResolved }*.name as String[]
+}
+
 apply from: "$rootDir/gradle/maven-publish.gradle"
 
 wrapper {
-    gradleVersion = '2.14.1'
+    gradleVersion = '4.0'
 }
 
 /* Sanity check that the minimum class-set is from Java 7 */
