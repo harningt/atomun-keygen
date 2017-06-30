@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Thomas Harning Jr. <harningt@gmail.com>
+ * Copyright 2015, 2017 Thomas Harning Jr. <harningt@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package us.eharning.atomun.keygen;
+package us.eharning.atomun.keygen
 
 /**
- * Interface representing key generator kinds.
+ * Enumeration for the kinds of Key Generators.
  */
-public interface KeyGeneratorAlgorithm {
+enum class StandardKeyGeneratorAlgorithm : KeyGeneratorAlgorithm {
+    BIP0032,
+    /* Stricter subset of BIP0032 enforcing path rules */
+    BIP0044
 }

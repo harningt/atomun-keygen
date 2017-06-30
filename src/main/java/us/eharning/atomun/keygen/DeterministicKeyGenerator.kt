@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Thomas Harning Jr. <harningt@gmail.com>
+ * Copyright 2015, 2017 Thomas Harning Jr. <harningt@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package us.eharning.atomun.keygen;
+package us.eharning.atomun.keygen
 
-import us.eharning.atomun.core.ValidationException;
-import us.eharning.atomun.core.ec.ECKey;
-
-import javax.annotation.Nonnull;
+import us.eharning.atomun.core.ValidationException
+import us.eharning.atomun.core.ec.ECKey
 
 /**
  * Generator of deterministic EC keys.
  */
-public interface DeterministicKeyGenerator {
+interface DeterministicKeyGenerator {
     /**
      * Return whether or not this generator has private key generation bits.
      *
      * @return true if generator has private bits.
      */
-    boolean hasPrivate();
+    fun hasPrivate(): Boolean
 
     /**
      * Generate a private key for the given sequence.
@@ -43,8 +41,8 @@ public interface DeterministicKeyGenerator {
      * @throws ValidationException
      *         if no private key is available or if somehow an invalid key is generated.
      */
-    @Nonnull
-    ECKey generate(int sequence) throws ValidationException;
+    @Throws(ValidationException::class)
+    fun generate(sequence: Int): ECKey
 
     /**
      * Generate a public key for the given sequence.
@@ -57,22 +55,20 @@ public interface DeterministicKeyGenerator {
      * @throws ValidationException
      *         if somehow an invalid key is generated.
      */
-    @Nonnull
-    ECKey generatePublic(int sequence) throws ValidationException;
+    @Throws(ValidationException::class)
+    fun generatePublic(sequence: Int): ECKey
 
     /**
      * Export the private/public bits of this key generator for later import dependent on what is available.
      *
      * @return exported key data in string form.
      */
-    @Nonnull
-    String export();
+    fun export(): String
 
     /**
      * Export the public bits of this key generator for later import.
      *
      * @return exported public key in string form.
      */
-    @Nonnull
-    String exportPublic();
+    fun exportPublic(): String
 }

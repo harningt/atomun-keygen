@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Thomas Harning Jr. <harningt@gmail.com>
+ * Copyright 2015, 2017 Thomas Harning Jr. <harningt@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,9 @@
  * limitations under the License.
  */
 
-package us.eharning.atomun.keygen.internal;
-
-import us.eharning.atomun.keygen.DeterministicKeyGenerator;
-
-import javax.annotation.Nonnull;
+package us.eharning.atomun.keygen
 
 /**
- * Key generator that uses an arbitrary depth hierarchy.
+ * Interface representing key generator kinds.
  */
-public interface HierarchicalKeyGenerator extends DeterministicKeyGenerator {
-
-    /**
-     * Obtain the public-key-only generator, omitting private key generation bits.
-     *
-     * @return key generator without private key generation capabilities.
-     */
-    @Nonnull
-    HierarchicalKeyGenerator getPublic();
-}
+interface KeyGeneratorAlgorithm

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Thomas Harning Jr. <harningt@gmail.com>
+ * Copyright 2015, 2017 Thomas Harning Jr. <harningt@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package us.eharning.atomun.keygen.spi;
+package us.eharning.atomun.keygen.internal
 
-import com.google.common.annotations.Beta;
+import us.eharning.atomun.keygen.DeterministicKeyGenerator
 
 /**
- * Marker interface for parameters to pass during building.
- *
- * @since 0.0.1
+ * Key generator that uses an arbitrary depth hierarchy.
  */
-@Beta
-public interface BuilderParameter {
+interface HierarchicalKeyGenerator : DeterministicKeyGenerator {
+
+    /**
+     * Obtain the public-key-only generator, omitting private key generation bits.
+     *
+     * @return key generator without private key generation capabilities.
+     */
+    val public: HierarchicalKeyGenerator
 }
