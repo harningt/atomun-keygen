@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Thomas Harning Jr. <harningt@gmail.com>
+ * Copyright 2015, 2017 Thomas Harning Jr. <harningt@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package us.eharning.atomun.keygen.internal.spi.bip0032;
+package us.eharning.atomun.keygen.internal.spi.bip0032
 
-import us.eharning.atomun.core.ValidationException;
-import us.eharning.atomun.keygen.path.BIP0032Path;
+import us.eharning.atomun.core.ValidationException
+import us.eharning.atomun.keygen.path.BIP0032Path
 
 /**
  * Processor class to implement operations on BIP0032 node instances.
  */
-interface BIP0032NodeProcessor {
+internal interface BIP0032NodeProcessor {
     /**
      * Convert the node into a Base58+checksum encoded string.
      *
@@ -31,7 +31,7 @@ interface BIP0032NodeProcessor {
      *
      * @return Base58+checksum encoded string.
      */
-    String exportNode(BIP0032Node node);
+    fun exportNode(node: BIP0032Node): String
 
     /**
      * Convert the Base58+checksum encoded string into a BIP0032 node.
@@ -44,7 +44,8 @@ interface BIP0032NodeProcessor {
      * @throws ValidationException
      *         if the data is not a valid encoded BIP0032 node.
      */
-    BIP0032Node importNode(String serialized) throws ValidationException;
+    @Throws(ValidationException::class)
+    fun importNode(serialized: String): BIP0032Node
 
     /**
      * Generates a BIP0032 node from a seed value that is passed through a basic HMAC process.
@@ -58,14 +59,15 @@ interface BIP0032NodeProcessor {
      *         if either cryptography fails (unlikely)
      *         or the seed results in an invalid EC key (unlikely).
      */
-    BIP0032Node generateNodeFromSeed(byte[] seed) throws ValidationException;
+    @Throws(ValidationException::class)
+    fun generateNodeFromSeed(seed: ByteArray): BIP0032Node
 
     /**
      * Generates a random BIP0032 node.
      *
      * @return BIP0032 node randomly generated.
      */
-    BIP0032Node generateNode();
+    fun generateNode(): BIP0032Node
 
     /**
      * Derives a BIP0032 node given the input path.
@@ -82,7 +84,8 @@ interface BIP0032NodeProcessor {
      *         it is impossible to derive a key due to missing private bits,
      *         or the resultant key is an invalid EC key (unlikely).
      */
-    BIP0032Node deriveNode(BIP0032Node node, BIP0032Path path) throws ValidationException;
+    @Throws(ValidationException::class)
+    fun deriveNode(node: BIP0032Node, path: BIP0032Path): BIP0032Node
 
     /**
      * Derives a BIP0032 node given the singular sequence value.
@@ -98,7 +101,8 @@ interface BIP0032NodeProcessor {
      *         it is impossible to derive a key due to missing private bits,
      *         or the resultant key is an invalid EC key (unlikely).
      */
-    BIP0032Node deriveNode(BIP0032Node node, int sequence) throws ValidationException;
+    @Throws(ValidationException::class)
+    fun deriveNode(node: BIP0032Node, sequence: Int): BIP0032Node
 
     /**
      * Obtain the BIP0032 node without its private bits (if present).
@@ -108,5 +112,5 @@ interface BIP0032NodeProcessor {
      *
      * @return BIP0032 node instance without private bits.
      */
-    BIP0032Node getPublic(BIP0032Node node);
+    fun getPublic(node: BIP0032Node): BIP0032Node
 }

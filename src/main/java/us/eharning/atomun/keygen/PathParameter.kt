@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Thomas Harning Jr. <harningt@gmail.com>
+ * Copyright 2015, 2017 Thomas Harning Jr. <harningt@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package us.eharning.atomun.keygen;
+package us.eharning.atomun.keygen
+
+import com.google.common.annotations.Beta
+import us.eharning.atomun.keygen.spi.BuilderParameter
 
 /**
- * Enumeration for the kinds of Key Generators.
+ * Marker interface to mark path-types to pass during building.
+
+ * @since 0.0.1
  */
-public enum StandardKeyGeneratorAlgorithm implements KeyGeneratorAlgorithm {
-    BIP0032,
-    /* Stricter subset of BIP0032 enforcing path rules */
-    BIP0044
-}
+@Beta
+interface PathParameter : BuilderParameter

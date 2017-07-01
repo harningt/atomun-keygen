@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Thomas Harning Jr. <harningt@gmail.com>
+ * Copyright 2015, 2017 Thomas Harning Jr. <harningt@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package us.eharning.atomun.keygen;
+package us.eharning.atomun.keygen.spi
 
-import us.eharning.atomun.keygen.spi.BuilderParameter;
+import com.google.common.annotations.Beta
 
 /**
- * Common super-interface for all seed inputs for key generators.
+ * Marker interface for parameters to pass during building.
+
+ * @since 0.0.1
  */
-public interface SeedParameter extends BuilderParameter {
-}
+@Beta
+interface BuilderParameter
