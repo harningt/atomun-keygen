@@ -63,7 +63,7 @@ internal class BIP0044KeyGeneratorBuilderSpi : KeyGeneratorBuilderSpi(StandardKe
                 is SerializedSeedParameter ->
                     node = BIP0032Generator.strategy.importNode(parameter.serializedSeed)
                 is ByteArraySeedParameter ->
-                    node = BIP0032Generator.strategy.generateNodeFromSeed(parameter.getSeed())
+                    node = BIP0032Generator.strategy.generateNodeFromSeed(parameter.seed)
                 is BIP0032Path -> {
                     path = BIP0044Path.fromPath(parameter)
                     require(path.hasChain(), { "Missing final required path element: Chain" })

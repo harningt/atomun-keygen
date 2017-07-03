@@ -19,6 +19,7 @@ package us.eharning.atomun.keygen
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.Maps
 import groovy.transform.Canonical
+import okio.ByteString
 import org.yaml.snakeyaml.Yaml
 
 /**
@@ -27,32 +28,32 @@ import org.yaml.snakeyaml.Yaml
 class BIP0032TestData {
     @Canonical
     static class RootTestCase {
-        public String name;
-        public byte[] seed;
+        public String name
+        public ByteString seed
 
-        public void setSeed(String seed) {
-            this.seed = seed.decodeHex()
+        void setSeed(String seed) {
+            this.seed = ByteString.decodeHex(seed)
         }
 
-        public String rootPublicKey;
-        public String rootPrivateKey;
+        public String rootPublicKey
+        public String rootPrivateKey
     }
 
     static class LocatorElement {
-        public int sequence;
-        public boolean hardened;
+        public int sequence
+        public boolean hardened
     }
     @Canonical
     static class DerivationTestCase extends RootTestCase {
-        public String path;
-        public LocatorElement[] locator;
-        public String publicKey;
+        public String path
+        public LocatorElement[] locator
+        public String publicKey
 
-        public String privateKey;
+        public String privateKey
     }
 
-    static List<RootTestCase> ROOT_CASES;
-    static List<DerivationTestCase> ALL_DERIVATION_CASES;
+    static List<RootTestCase> ROOT_CASES
+    static List<DerivationTestCase> ALL_DERIVATION_CASES
     static {
         ImmutableList.Builder<RootTestCase> rootCaseBuilder = ImmutableList.builder()
         ImmutableList.Builder<DerivationTestCase> caseBuilder = ImmutableList.builder()

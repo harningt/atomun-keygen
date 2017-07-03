@@ -16,6 +16,8 @@
 
 package us.eharning.atomun.keygen
 
+import okio.ByteString
+import okio.ByteStrings
 import javax.annotation.concurrent.Immutable
 
 /**
@@ -30,17 +32,8 @@ class ByteArraySeedParameter
  *         byte array to copy as the seed.
  */
 private constructor(
-        private val seed: ByteArray
+        val seed: ByteString
 ) : SeedParameter {
-
-    /**
-     * Obtain a copy of the seed byte array.
-     *
-     * @return copy of the seed byte array.
-     */
-    fun getSeed(): ByteArray {
-        return seed.copyOf()
-    }
 
     companion object {
 
@@ -52,7 +45,18 @@ private constructor(
          */
         @JvmStatic
         fun getParameter(seed: ByteArray): ByteArraySeedParameter {
-            return ByteArraySeedParameter(seed.copyOf())
+            return getParameter(ByteString.of(*seed))
+        }
+
+        /**
+         * Construct a new seed parameter from the given seed.
+         *
+         * @param seed
+         *         byte string to set as seed.
+         */
+        @JvmStatic
+        fun getParameter(seed: ByteString): ByteArraySeedParameter {
+            return ByteArraySeedParameter(seed)
         }
     }
 }

@@ -65,7 +65,7 @@ internal class BIP0032KeyGeneratorBuilderSpi : KeyGeneratorBuilderSpi(StandardKe
                 is SerializedSeedParameter ->
                     node = BIP0032Generator.strategy.importNode(parameter.serializedSeed)
                 is ByteArraySeedParameter ->
-                    node = BIP0032Generator.strategy.generateNodeFromSeed(parameter.getSeed())
+                    node = BIP0032Generator.strategy.generateNodeFromSeed(parameter.seed)
                 is BIP0032Path ->
                     path = parameter
                 else -> throw IllegalArgumentException("Unsupported parameter type: " + parameter)

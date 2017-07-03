@@ -16,6 +16,7 @@
 
 package us.eharning.atomun.keygen.internal.spi.bip0032
 
+import okio.ByteString
 import us.eharning.atomun.core.ValidationException
 import us.eharning.atomun.keygen.path.BIP0032Path
 
@@ -60,7 +61,7 @@ internal interface BIP0032NodeProcessor {
      *         or the seed results in an invalid EC key (unlikely).
      */
     @Throws(ValidationException::class)
-    fun generateNodeFromSeed(seed: ByteArray): BIP0032Node
+    fun generateNodeFromSeed(seed: ByteString): BIP0032Node
 
     /**
      * Generates a random BIP0032 node.

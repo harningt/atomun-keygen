@@ -15,10 +15,12 @@
  */
 package us.eharning.atomun.keygen
 
+import okio.ByteString
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import spock.lang.Specification
 import spock.lang.Unroll
 import us.eharning.atomun.core.ec.ECKey
+import us.eharning.atomun.keygen.internal.HierarchicalKeyGenerator
 import us.eharning.atomun.keygen.internal.spi.bip0032.BouncyCastleBIP0032NodeProcessor
 import us.eharning.atomun.keygen.path.BIP0032Path
 
@@ -28,20 +30,20 @@ import java.security.Security
  * Generic building test.
  */
 class BIP0032Specification extends Specification {
-    static final DeterministicKeyGenerator getRandom() {
-        return KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).build()
+    static final HierarchicalKeyGenerator getRandom() {
+        return KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).build() as HierarchicalKeyGenerator
     }
-    static final DeterministicKeyGenerator getFromSeed(byte[] seed) {
-        return KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setSeed(ByteArraySeedParameter.getParameter(seed)).build()
+    static final HierarchicalKeyGenerator getFromSeed(ByteString seed) {
+        return KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setSeed(ByteArraySeedParameter.getParameter(seed)).build() as HierarchicalKeyGenerator
     }
-    static final DeterministicKeyGenerator getFromSeed(byte[] seed, BIP0032Path path) {
-        return KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setPath(path).setSeed(ByteArraySeedParameter.getParameter(seed)).build()
+    static final HierarchicalKeyGenerator getFromSeed(ByteString seed, BIP0032Path path) {
+        return KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setPath(path).setSeed(ByteArraySeedParameter.getParameter(seed)).build() as HierarchicalKeyGenerator
     }
-    static final DeterministicKeyGenerator getFromSerialized(String serialized) {
-        return KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setSeed(SerializedSeedParameter.getParameter(serialized)).build()
+    static final HierarchicalKeyGenerator getFromSerialized(String serialized) {
+        return KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setSeed(SerializedSeedParameter.getParameter(serialized)).build() as HierarchicalKeyGenerator
     }
-    static DeterministicKeyGenerator ekprivate = getRandom()
-    static DeterministicKeyGenerator ekpublic = ekprivate.getPublic()
+    static HierarchicalKeyGenerator ekprivate = getRandom()
+    static HierarchicalKeyGenerator ekpublic = ekprivate.public
 
     def cleanup() {
         System.out.println(BouncyCastleBIP0032NodeProcessor.NODE_CACHE.stats())
@@ -53,38 +55,42 @@ class BIP0032Specification extends Specification {
 
     def "generation test"(int i) {
         given:
-        ECKey fullControl = ekprivate.generate(i);
-        ECKey readOnly = ekpublic.generatePublic(i);
+        ECKey fullControl = ekprivate.generate(i)
+        ECKey readOnly = ekpublic.generatePublic(i)
         expect:
-        fullControl.getPublic () ==  readOnly.getPublic()
-        fullControl.getAddressHash () == readOnly.getAddressHash ()
+        fullControl.public ==  readOnly.public
+        fullControl.addressHash == readOnly.addressHash
         where:
         [ i ] << ([0..20].iterator())
     }
 
     def "test serialization"(BIP0032TestData.RootTestCase rootTestCase) {
         given:
-        DeterministicKeyGenerator ekprivate = getFromSeed(rootTestCase.seed)
-        DeterministicKeyGenerator ekpublic = ekprivate.getPublic ()
+        HierarchicalKeyGenerator ekprivate = getFromSeed(rootTestCase.seed)
+        HierarchicalKeyGenerator ekpublic = ekprivate.public
         expect:
         ekprivate.export() ==  rootTestCase.rootPrivateKey
         ekprivate.exportPublic() == rootTestCase.rootPublicKey
         ekpublic.export() == rootTestCase.rootPublicKey
         ekprivate.hasPrivate()
         !ekpublic.hasPrivate()
+        ekprivate != ekpublic
+        ekpublic == ekpublic.public
         where:
         rootTestCase << BIP0032TestData.ROOT_CASES
     }
     def "test round trip serialization"(BIP0032TestData.RootTestCase rootTestCase) {
         given:
-        DeterministicKeyGenerator ekprivate = getFromSeed(rootTestCase.seed)
-        DeterministicKeyGenerator ekpublic = ekprivate.getPublic ()
+        HierarchicalKeyGenerator ekprivate = getFromSeed(rootTestCase.seed)
+        HierarchicalKeyGenerator ekpublic = ekprivate.public
         expect:
         ekprivate.export() ==  rootTestCase.rootPrivateKey
         ekprivate.exportPublic() == rootTestCase.rootPublicKey
         ekpublic.export() == rootTestCase.rootPublicKey
         ekprivate == getFromSerialized(rootTestCase.rootPrivateKey)
         ekpublic == getFromSerialized(rootTestCase.rootPublicKey)
+        ekprivate != ekpublic
+        ekpublic == ekpublic.public
         where:
         rootTestCase << BIP0032TestData.ROOT_CASES
     }
@@ -93,14 +99,16 @@ class BIP0032Specification extends Specification {
     def "test path-based derivation using builder: #testCase.name"(BIP0032TestData.DerivationTestCase testCase) {
         given:
         def path = BIP0032Path.fromBIP0032String(testCase.path)
-        DeterministicKeyGenerator ek = KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setPath(path).setSeed(ByteArraySeedParameter.getParameter(testCase.seed)).build()
-        DeterministicKeyGenerator ep = ek.getPublic()
+        HierarchicalKeyGenerator ek = KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setPath(path).setSeed(ByteArraySeedParameter.getParameter(testCase.seed)).build()
+        HierarchicalKeyGenerator ep = ek.public
         expect:
         ek.export() == testCase.privateKey
         ek.exportPublic() == testCase.publicKey
         ep.export() == testCase.publicKey
         ek.hasPrivate()
         !ep.hasPrivate()
+        ek != ep
+        ep == ep.public
         where:
         testCase << BIP0032TestData.ALL_DERIVATION_CASES
     }
@@ -113,14 +121,16 @@ class BIP0032Specification extends Specification {
             pathBuilder.addSegment(element.sequence, element.hardened)
         }
         def path = pathBuilder.build()
-        DeterministicKeyGenerator ek = KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setPath(path).setSeed(ByteArraySeedParameter.getParameter(testCase.seed)).build()
-        DeterministicKeyGenerator ep = ek.getPublic()
+        HierarchicalKeyGenerator ek = KeyGeneratorBuilder.newBuilder(StandardKeyGeneratorAlgorithm.BIP0032).setPath(path).setSeed(ByteArraySeedParameter.getParameter(testCase.seed)).build()
+        HierarchicalKeyGenerator ep = ek.public
         expect:
         ek.export() == testCase.privateKey
         ek.exportPublic() == testCase.publicKey
         ep.export() == testCase.publicKey
         ek.hasPrivate()
         !ep.hasPrivate()
+        ek != ep
+        ep == ep.public
         where:
         testCase << BIP0032TestData.ALL_DERIVATION_CASES
     }

@@ -25,7 +25,7 @@ import java.security.Security
  * Generic building test.
  */
 class BIP0044PathSpecification extends Specification {
-    public static final int BITCOIN = (int) 0x80000000
+    public static final int BITCOIN_TYPE = (int) 0x80000000
     static {
         Security.addProvider(new BouncyCastleProvider());
     }
@@ -38,9 +38,9 @@ class BIP0044PathSpecification extends Specification {
         thrown(IllegalArgumentException)
 
         where:
-        path | _
-        "m" | _
-        "m/44" | _
+        path    | _
+        "m"     | _
+        "m/44"  | _
         "m/43'" | _
     }
 
@@ -54,9 +54,9 @@ class BIP0044PathSpecification extends Specification {
         thrown(IllegalArgumentException)
 
         where:
-        path | _
-        "m" | _
-        "m/44" | _
+        path    | _
+        "m"     | _
+        "m/44"  | _
         "m/43'" | _
     }
 
@@ -75,11 +75,11 @@ class BIP0044PathSpecification extends Specification {
         thrown(IllegalStateException)
 
         where:
-        coinType | account | chain | address
-        null     | 0       | 0     | 1
-        BITCOIN  | null    | 0     | 1
-        BITCOIN  | 0       | null  | 1
-        null     | null    | null  | 1
+        coinType     | account | chain | address
+        null         | 0       | 0     | 1
+        BITCOIN_TYPE | null    | 0     | 1
+        BITCOIN_TYPE | 0       | null  | 1
+        null         | null    | null  | 1
     }
 
     def "partial path generation test"(String path, Integer coinType, Integer account, Integer chain, Integer address) {
@@ -96,18 +96,18 @@ class BIP0044PathSpecification extends Specification {
         path == matchPath.toString()
 
         where:
-        path               | coinType | account | chain | address
-        "m/44'/0'/0'/0/1"  | BITCOIN  | 0       | 0     | 1
-        "m/44'/0'/0'/1"    | BITCOIN  | 0       | 1     | null
-        "m/44'/0'/0'"      | BITCOIN  | 0       | null  | null
-        "m/44'/0'"         | BITCOIN  | null    | null  | null
-        "m/44'"            | null     | null    | null  | null
+        path               | coinType     | account | chain | address
+        "m/44'/0'/0'/0/1"  | BITCOIN_TYPE | 0       | 0     | 1
+        "m/44'/0'/0'/1"    | BITCOIN_TYPE | 0       | 1     | null
+        "m/44'/0'/0'"      | BITCOIN_TYPE | 0       | null  | null
+        "m/44'/0'"         | BITCOIN_TYPE | null    | null  | null
+        "m/44'"            | null         | null    | null  | null
     }
 
     def "chain path generation test"(String path, int account, int chain) {
         given:
         BIP0044Path.Builder builder = new BIP0044Path.Builder()
-        builder.setCoinType(BITCOIN)
+        builder.setCoinType(BITCOIN_TYPE)
                 .setAccount(account)
                 .setChain(chain)
 
@@ -127,7 +127,7 @@ class BIP0044PathSpecification extends Specification {
     def "full path generation test"(String path, int account, int chain, int address) {
         given:
         BIP0044Path.Builder builder = new BIP0044Path.Builder()
-        builder.setCoinType(BITCOIN)
+        builder.setCoinType(BITCOIN_TYPE)
                 .setAccount(account)
                 .setChain(chain)
                 .setAddress(address)

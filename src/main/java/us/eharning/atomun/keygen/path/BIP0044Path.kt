@@ -157,7 +157,7 @@ internal constructor(
          * @return self to permit chaining.
          */
         fun setAccount(account: Int): Builder {
-            setSegment(ACCOUNT_INDEX, account or 0x80000000.toInt())
+            setSegment(ACCOUNT_INDEX, account or HARDENED_FLAG)
             return this
         }
 
@@ -170,7 +170,7 @@ internal constructor(
          * @return self to permit chaining.
          */
         fun setChain(chain: Int): Builder {
-            setSegment(CHAIN_INDEX, chain and 0x80000000.toInt().inv())
+            setSegment(CHAIN_INDEX, chain and INDEX_MASK)
             return this
         }
 
@@ -183,7 +183,7 @@ internal constructor(
          * @return self to permit chaining.
          */
         fun setAddress(address: Int): Builder {
-            setSegment(ADDRESS_INDEX, address and 0x80000000.toInt().inv())
+            setSegment(ADDRESS_INDEX, address and INDEX_MASK)
             return this
         }
 
@@ -273,6 +273,8 @@ internal constructor(
     }
 
     companion object {
+        private val HARDENED_FLAG:Int = 0x80000000.toInt()
+        private val INDEX_MASK:Int = 0x7FFFFFFF
         private val BIP0044_PURPOSE = getSegment(44, true)
 
         private val PURPOSE_INDEX = 0
@@ -336,7 +338,7 @@ internal constructor(
          */
         private fun getSegment(value: Int, hardened: Boolean): Int {
             require(value > 0, { "Illegal segment value: $value <= 0" })
-            return if (!hardened) value else 0x80000000.toInt() or value
+            return if (!hardened) value else HARDENED_FLAG or value
         }
 
         /**

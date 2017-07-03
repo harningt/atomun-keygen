@@ -19,6 +19,11 @@ package us.eharning.atomun.keygen.internal.spi.bip0032
 import com.google.common.base.Charsets
 import com.google.common.cache.CacheBuilder
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import okio.ByteString
+import okio.ByteStrings
+import okio.copyTo
+import okio.process
+import okio.toBigInteger
 import org.bouncycastle.asn1.sec.SECNamedCurves
 import us.eharning.atomun.core.ValidationException
 import us.eharning.atomun.core.ec.ECKey
@@ -52,27 +57,27 @@ internal class BouncyCastleBIP0032NodeProcessor : BIP0032NodeProcessor {
         val out = ByteArray(78)
         if (master.hasPrivate()) {
             if (production) {
-                putBytes(out, 0, xprv)
+                out.putBytes(0, xprv)
             } else {
-                putBytes(out, 0, tprv)
+                out.putBytes(0, tprv)
             }
         } else {
             if (production) {
-                putBytes(out, 0, xpub)
+                out.putBytes(0, xpub)
             } else {
-                putBytes(out, 0, tpub)
+                out.putBytes(0, tpub)
             }
         }
-        out[4] = (node.depth and 0xff).toByte()
-        putInt32(out, 5, node.parent)
-        putInt32(out, 9, node.sequence)
-        putBytes(out, 13, node.getChainCode())
+        out.putInt8(4, node.depth)
+        out.putInt32(5, node.parent)
+        out.putInt32(9, node.sequence)
+        out.putBytes(13, node.chainCode)
         if (master.hasPrivate()) {
             out[45] = 0x00
             val privateKey = master.exportPrivate()!!
-            putBytes(out, 46, privateKey)
+            out.putBytes(46, privateKey)
         } else {
-            putBytes(out, 45, master.exportPublic())
+            out.putBytes(45, master.exportPublic())
         }
         return Base58.encodeWithChecksum(out)
     }
@@ -103,16 +108,17 @@ internal class BouncyCastleBIP0032NodeProcessor : BIP0032NodeProcessor {
         } else {
             throw ValidationException("Invalid magic number for an extended key")
         }
-        val depth = data[4].toInt() and 0xff
-        val parent = getInt32(data, 5)
-        val sequence = getInt32(data, 9)
-        val chainCode = data.copyOfRange(13, 13 + 32)
-        val pubOrPriv = data.copyOfRange(13 + 32, data.size)
+        val depth = data.getInt8(4)
+        val parent = data.getInt32(5)
+        val sequence = data.getInt32(9)
+        val chainCode = data.getBytes(13, 32)
+        val pubOrPriv = data.getBytes(13 + 32)
         val key: ECKey
         if (hasPrivate) {
-            key = ECKeyFactory.getInstance().fromSecretExponent(BigInteger(1, pubOrPriv), true)
+            val secretExponent = pubOrPriv.toBigInteger()
+            key = ECKeyFactory.instance.fromSecretExponent(secretExponent, compressed = true)
         } else {
-            key = ECKeyFactory.getInstance().fromEncodedPublicKey(pubOrPriv, true)
+            key = ECKeyFactory.instance.fromEncodedPublicKey(pubOrPriv, true)
         }
         return BIP0032Node(key, chainCode, depth, parent, sequence)
     }
@@ -132,19 +138,16 @@ internal class BouncyCastleBIP0032NodeProcessor : BIP0032NodeProcessor {
     /* BITCOIN_SEED is not a password but instead a shared key to mask the seed input */
     @SuppressFBWarnings("HARD_CODE_PASSWORD")
     @Throws(ValidationException::class)
-    override fun generateNodeFromSeed(seed: ByteArray): BIP0032Node {
+    override fun generateNodeFromSeed(seed: ByteString): BIP0032Node {
         try {
-            val mac = Mac.getInstance("HmacSHA512")
-            val seedkey = SecretKeySpec(BITCOIN_SEED, "HmacSHA512")
-            mac.init(seedkey)
-            val lr = mac.doFinal(seed)
-            val l = lr.copyOfRange(0, 32)
-            val r = lr.copyOfRange(32, 64)
-            val m = BigInteger(1, l)
+            val lr = seed.hmacSha512(BITCOIN_SEED)
+            val l = lr.substring(0, 32)
+            val r = lr.substring(32, 64)
+            val m = l.toBigInteger()
             if (m >= curve.n || m == BigInteger.ZERO) {
                 throw ValidationException("Invalid chain value generated")
             }
-            val keyPair = ECKeyFactory.getInstance().fromSecretExponent(m, true)
+            val keyPair = ECKeyFactory.instance.fromSecretExponent(m, compressed = true)
             return BIP0032Node(keyPair, r, 0, 0, 0)
         } catch (e: NoSuchAlgorithmException) {
             throw ValidationException(e)
@@ -160,10 +163,10 @@ internal class BouncyCastleBIP0032NodeProcessor : BIP0032NodeProcessor {
      * @return BIP0032 node randomly generated.
      */
     override fun generateNode(): BIP0032Node {
-        val key = ECKeyFactory.getInstance().generateRandom(true)
+        val key = ECKeyFactory.instance.generateRandom(true)
         val chainCode = ByteArray(32)
         rnd.nextBytes(chainCode)
-        return BIP0032Node(key, chainCode, 0, 0, 0)
+        return BIP0032Node(key, ByteStrings.takeOwnership(chainCode), 0, 0, 0)
     }
 
     /**
@@ -182,23 +185,24 @@ internal class BouncyCastleBIP0032NodeProcessor : BIP0032NodeProcessor {
      *         if the chain code is somehow not a value HmacSHA512 key (unlikely).
      */
     @Throws(NoSuchAlgorithmException::class, InvalidKeyException::class)
-    private fun deriveI(node: BIP0032Node, sequence: Int): ByteArray {
+    private fun deriveI(node: BIP0032Node, sequence: Int): ByteString {
         val mac = Mac.getInstance("HmacSHA512")
-        val key = SecretKeySpec(node.getChainCode(), "HmacSHA512")
+        val key = node.chainCode.process { SecretKeySpec(it, "HmacSHA512") }
         mac.init(key)
         val extended: ByteArray
-        if (sequence and 0x80000000.toInt() == 0) {
+        if (sequence and PRIVATE_FLAG == 0) {
             val pub = node.master.exportPublic()
-            extended = pub.copyOf(pub.size + 4)
-            putInt32(extended, pub.size, sequence)
+            extended = ByteArray(pub.size() + 4)
+            extended.putBytes(0, pub)
+            extended.putInt32(pub.size(), sequence)
         } else {
             val priv = node.master.exportPrivate()!!
-            extended = ByteArray(priv.size + 5)
+            extended = ByteArray(priv.size() + 5)
             /* Offset of 1 to account for extra zero at front */
-            System.arraycopy(priv, 0, extended, 1, priv.size)
-            putInt32(extended, priv.size + 1, sequence)
+            extended.putBytes(1, priv)
+            extended.putInt32(priv.size() + 1, sequence)
         }
-        return mac.doFinal(extended)
+        return ByteStrings.takeOwnership(mac.doFinal(extended))
     }
 
     /**
@@ -249,32 +253,33 @@ internal class BouncyCastleBIP0032NodeProcessor : BIP0032NodeProcessor {
         return NODE_CACHE.get(nodeSequence) {
             val master = node.master
             try {
-                if (sequence and 0x80000000.toInt() != 0 && master.exportPrivate() == null) {
+                if (sequence and PRIVATE_FLAG != 0 && !master.hasPrivate()) {
                     throw ValidationException("Need private key for private generation")
                 }
                 val lr = deriveI(node, sequence)
 
-                val l = lr.copyOfRange(0, 32)
-                val r = lr.copyOfRange(32, 64)
-                val m = BigInteger(1, l)
+                val l = lr.substring(0, 32)
+                val r = lr.substring(32, 64)
+                val m = l.toBigInteger()
                 if (m >= curve.n || m == BigInteger.ZERO) {
                     throw ValidationException("Invalid chain value generated")
                 }
                 if (master.hasPrivate()) {
-                    val priv = master.exportPrivate()!!
-                    val k = (m + BigInteger(1, priv)) % curve.n
+                    val private = master.exportPrivate()!!
+                    val k = (m + private.toBigInteger()).mod(curve.n)
                     if (k == BigInteger.ZERO) {
                         throw ValidationException("Invalid private node generated")
                     }
-                    return@get BIP0032Node(ECKeyFactory.getInstance().fromSecretExponent(k, true), r, node.depth + 1, node.fingerPrint, sequence)
+                    return@get BIP0032Node(ECKeyFactory.instance.fromSecretExponent(k, null, true), r, node.depth + 1, node.fingerPrint, sequence)
                 } else {
-                    var pub = master.exportPublic()
-                    val q = curve.g.multiply(m).add(curve.curve.decodePoint(pub))
+                    val public = master.exportPublic()
+                    val publicPoint = public.process { curve.curve.decodePoint(it) }
+                    val q = curve.g.multiply(m).add(publicPoint)
                     if (q.isInfinity) {
                         throw ValidationException("Invalid public node generated")
                     }
-                    pub = q.getEncoded(true)
-                    return@get BIP0032Node(ECKeyFactory.getInstance().fromEncodedPublicKey(pub, true), r, node.depth + 1, node.fingerPrint, sequence)
+                    val encodedPublicKey = ByteStrings.takeOwnership(q.getEncoded(true))
+                    return@get BIP0032Node(ECKeyFactory.instance.fromEncodedPublicKey(encodedPublicKey, true), r, node.depth + 1, node.fingerPrint, sequence)
                 }
             } catch (e: NoSuchAlgorithmException) {
                 throw ValidationException(e)
@@ -296,8 +301,8 @@ internal class BouncyCastleBIP0032NodeProcessor : BIP0032NodeProcessor {
         if (!node.hasPrivate()) {
             return node
         }
-        val master = ECKeyFactory.getInstance().fromEncodedPublicKey(node.master.exportPublic(), true)
-        return BIP0032Node(master, node.getChainCode(), node.depth, node.parent, node.sequence)
+        val master = ECKeyFactory.instance.fromEncodedPublicKey(node.master.exportPublic(), true)
+        return BIP0032Node(master, node.chainCode, node.depth, node.parent, node.sequence)
     }
 
     /**
@@ -321,58 +326,103 @@ internal class BouncyCastleBIP0032NodeProcessor : BIP0032NodeProcessor {
         private val NODE_CACHE = CacheBuilder.newBuilder().maximumSize(16).recordStats().build<NodeSequence, BIP0032Node>()
         private val rnd = SecureRandom()
         private val curve = SECNamedCurves.getByName("secp256k1")
-        private val BITCOIN_SEED = "Bitcoin seed".toByteArray(Charsets.US_ASCII)
+        private val BITCOIN_SEED = ByteString.encodeString("Bitcoin seed", Charsets.US_ASCII)
         private val xprv = byteArrayOf(0x04, 0x88.toByte(), 0xAD.toByte(), 0xE4.toByte())
         private val xpub = byteArrayOf(0x04, 0x88.toByte(), 0xB2.toByte(), 0x1E.toByte())
         private val tprv = byteArrayOf(0x04, 0x35.toByte(), 0x83.toByte(), 0x94.toByte())
         private val tpub = byteArrayOf(0x04, 0x35.toByte(), 0x87.toByte(), 0xCF.toByte())
 
-        /**
-         * Copy the given data bytes into the output array at a given offset.
-         *
-         * @param out
-         *         array to write into.
-         * @param index
-         *         offset into the array to write at.
-         * @param data
-         *         array to write from.
-         */
-        private fun putBytes(out: ByteArray, index: Int, data: ByteArray) {
-            System.arraycopy(data, 0, out, index, data.size)
-        }
-
-        /**
-         * Store an integer as 4 bytes in a byte array.
-         *
-         * @param out
-         *         array to write into.
-         * @param index
-         *         offset into the array to write at.
-         * @param value
-         *         value to write into the array.
-         */
-        private fun putInt32(out: ByteArray, index: Int, value: Int) {
-            out[index] = (value shr 24).toByte()
-            out[index + 1] = (value shr 16).toByte()
-            out[index + 2] = (value shr 8).toByte()
-            out[index + 3] = value.toByte()
-        }
-
-        /**
-         * Convert 4 bytes of a byte array to an integer.
-         *
-         * @param input
-         *         byte array to obtain the integer from.
-         * @param index
-         *         offset into the array to start at.
-         *
-         * @return 32-bit integer from the input byte array.
-         */
-        private fun getInt32(input: ByteArray, index: Int): Int {
-            return input[index].toInt() and 0xff shl 24 or
-                    (input[index + 1].toInt() and 0xff shl 16) or
-                    (input[index + 2].toInt() and 0xff shl 8) or
-                    (input[index + 3].toInt() and 0xff)
-        }
+        private val PRIVATE_FLAG: Int = 0x80000000.toInt()
     }
+}
+
+/**
+ * Copy the given data bytes into the output array at a given offset.
+ *
+ * @param index
+ *         offset into the array to write at.
+ * @param data
+ *         array to write from.
+ */
+private fun ByteArray.putBytes(index: Int, data: ByteArray) {
+    System.arraycopy(data, 0, this, index, data.size)
+}
+
+/**
+ * Copy the given data bytes into the output array at a given offset.
+ *
+ * @param index
+ *         offset into the array to write at.
+ * @param data
+ *         array to write from.
+ */
+private fun ByteArray.putBytes(index: Int, data: ByteString) {
+    data.copyTo(this, index)
+}
+
+/**
+ * Store an integer as 1 bytes in a byte array.
+ *
+ * @param index
+ *         offset into the array to write at.
+ * @param value
+ *         value to write into the array.
+ */
+private fun ByteArray.putInt8(index: Int, value: Int) {
+    this[index] = (value and 0xff).toByte()
+}
+
+/**
+ * Store an integer as 4 bytes in a byte array.
+ *
+ * @param index
+ *         offset into the array to write at.
+ * @param value
+ *         value to write into the array.
+ */
+private fun ByteArray.putInt32(index: Int, value: Int) {
+    this[index] = (value shr 24).toByte()
+    this[index + 1] = (value shr 16).toByte()
+    this[index + 2] = (value shr 8).toByte()
+    this[index + 3] = value.toByte()
+}
+
+/**
+ * Extract a ByteString from a byte array.
+ *
+ * @param index
+ *         offset into the array to read from.
+ * @param length
+ *         how many bytes to extract.
+ *         Default: from index to end
+ */
+private fun ByteArray.getBytes(index: Int, length: Int = size - index): ByteString {
+    return ByteString.of(this, index, length)
+}
+
+/**
+ * Convert 1 byte (treated as unsigned) of a byte array to an integer.
+ *
+ * @param index
+ *         offset into the array to start at.
+ *
+ * @return 8-bit integer from the input byte array.
+ */
+private fun ByteArray.getInt8(index: Int): Int {
+    return this[index].toInt() and 0xff
+}
+
+/**
+ * Convert 4 bytes of a byte array to an integer.
+ *
+ * @param index
+ *         offset into the array to start at.
+ *
+ * @return 32-bit integer from the input byte array.
+ */
+private fun ByteArray.getInt32(index: Int): Int {
+    return this[index].toInt() and 0xff shl 24 or
+            (this[index + 1].toInt() and 0xff shl 16) or
+            (this[index + 2].toInt() and 0xff shl 8) or
+            (this[index + 3].toInt() and 0xff)
 }

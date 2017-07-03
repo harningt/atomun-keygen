@@ -59,8 +59,8 @@ internal constructor(
         builder.append("m")
         for (segment in segments) {
             builder.append('/')
-            if (0 != segment and 0x80000000.toInt()) {
-                builder.append(segment and 0x7FFFFFFF)
+            if (0 != segment and HARDENED_FLAG) {
+                builder.append(segment and INDEX_MASK)
                 builder.append('\'')
             } else {
                 builder.append(segment)
@@ -173,10 +173,10 @@ internal constructor(
          * @return self to permit chaining.
          */
         fun addSegment(segment: Int, isHardened: Boolean): Builder {
-            require(segment == segment and 0x80000000.toInt().inv())
+            require(segment == segment and INDEX_MASK)
             val segmentValue: Int
             if (isHardened) {
-                segmentValue = segment or 0x80000000.toInt()
+                segmentValue = segment or HARDENED_FLAG
             } else {
                 segmentValue = segment
             }
@@ -204,7 +204,7 @@ internal constructor(
                 }
                 val segment: Int
                 if (item.endsWith("'")) {
-                    segment = 0x80000000.toInt() or item.substring(0, item.length - 1).toInt(10)
+                    segment = HARDENED_FLAG or item.substring(0, item.length - 1).toInt(10)
                 } else {
                     segment = Integer.parseInt(item, 10)
                 }
@@ -220,6 +220,8 @@ internal constructor(
     }
 
     companion object {
+        private val HARDENED_FLAG:Int = 0x80000000.toInt()
+        private val INDEX_MASK:Int = 0x7FFFFFFF
 
         /**
          * Construct a path from a sequence of integers as segments.
