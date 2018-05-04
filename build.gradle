@@ -2,7 +2,7 @@ import org.ajoberstar.gradle.git.release.opinion.Strategies
 
 buildscript {
     dependencies {
-        classpath "net.sf.proguard:proguard-gradle:5.3.3"
+        classpath "net.sf.proguard:proguard-gradle:6.0.2"
     }
 }
 
@@ -11,7 +11,7 @@ plugins {
     id 'groovy'
     id 'maven'
     id 'us.eharning.gradle.defaults' version '0.1.3'
-    id "org.jetbrains.kotlin.jvm"  version '1.1.3'
+    id "org.jetbrains.kotlin.jvm"  version '1.2.41'
 }
 
 group = 'us.eharning.atomun'
@@ -30,23 +30,23 @@ repositories {
 
 dependencies {
     findbugs 'com.google.code.findbugs:findbugs:3.0.1'
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:1.1.3"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     compile 'us.eharning.atomun:atomun-core:0.0.2'
 
-    /* NOTE: Using the android version due to intended use, consider replacable w/ 22.0 */
-    compile group: 'com.google.guava', name: 'guava', version: '22.0-android'
+    /* NOTE: Using the android version due to intended use, consider replacable w/ 25.0 */
+    compile group: 'com.google.guava', name: 'guava', version: '25.0-android'
     compile ('com.google.code.findbugs:annotations:3.0.1u2') {
         force = true
     }
     compile 'com.google.code.findbugs:jsr305:3.0.2'
 
-    compile 'org.bouncycastle:bcprov-jdk15on:1.57'
+    compile 'org.bouncycastle:bcprov-jdk15on:1.59'
 
-    testCompile 'org.codehaus.groovy:groovy:2.4.12'
+    testCompile 'org.codehaus.groovy:groovy:2.4.14'
     testCompile 'org.spockframework:spock-core:1.1-groovy-2.4'
     testCompile 'net.trajano.caliper:caliper:1.2.1'
-    testCompile 'org.yaml:snakeyaml:1.18'
+    testCompile 'org.yaml:snakeyaml:1.21'
 }
 
 javadoc {

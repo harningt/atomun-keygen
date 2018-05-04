@@ -6,16 +6,17 @@ jdk:
     - oraclejdk8
 
 env:
-    - TERM=dumb JAVA7_HOME=/usr/lib/jvm/java-7-oracle
+    - TERM=dumb
 
 before_cache:
-    - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+    - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+    - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
 cache:
     directories:
-        - $HOME/.m2
-        - $HOME/.gradle/caches
-        - $HOME/.gradle/wrapper
+        - $HOME/.m2/
+        - $HOME/.gradle/caches/
+        - $HOME/.gradle/wrapper/
 
 before_install:
     - test ${TRAVIS_SECURE_ENV_VARS} == true && gpg -d --passphrase $GRADLE_SECRET_KEY < gradle/private.tar.gz.travis-gpg | tar -xz -C $HOME || true
@@ -23,7 +24,6 @@ before_install:
 install: ''
 script:
     - ./gradlew clean check
-    - ./gradlew proguardCheck
 
 after_success:
     - test ${TRAVIS_SECURE_ENV_VARS} == true && test ${TRAVIS_BRANCH} = develop && test ${TRAVIS_PULL_REQUEST} = false && ./gradlew -P release.stage=SNAPSHOT -P sign=TRUE -P signing.secretKeyRingFile=$HOME/.gnupg/secring.gpg uploadArchives || false
