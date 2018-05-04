@@ -1,12 +1,13 @@
 language: java
 
+dist: precise
 sudo: false
 
 jdk:
     - oraclejdk8
 
 env:
-    - TERM=dumb JAVA7_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+    - TERM=dumb JAVA7_HOME=/usr/lib/jvm/java-7-oracle
 
 before_cache:
     - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
