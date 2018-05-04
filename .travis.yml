@@ -9,13 +9,14 @@ env:
     - TERM=dumb JAVA7_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 
 before_cache:
-    - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+    - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+    - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
 cache:
     directories:
-        - $HOME/.m2
-        - $HOME/.gradle/caches
-        - $HOME/.gradle/wrapper
+        - $HOME/.m2/
+        - $HOME/.gradle/caches/
+        - $HOME/.gradle/wrapper/
 
 before_install:
     - test ${TRAVIS_SECURE_ENV_VARS} == true && gpg -d --passphrase $GRADLE_SECRET_KEY < gradle/private.tar.gz.travis-gpg | tar -xz -C $HOME || true
