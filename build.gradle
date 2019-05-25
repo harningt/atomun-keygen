@@ -41,7 +41,7 @@ dependencies {
     }
     compile 'com.google.code.findbugs:jsr305:3.0.2'
 
-    compile 'org.bouncycastle:bcprov-jdk15on:1.59'
+    compile 'org.bouncycastle:bcprov-jdk15on:1.61'
 
     testCompile 'org.codehaus.groovy:groovy:2.4.14'
     testCompile 'org.spockframework:spock-core:1.1-groovy-2.4'
