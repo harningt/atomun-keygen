@@ -124,11 +124,6 @@ concrete instance of [BIP0043](BIP0043Spec) based on the extremely flexible
 Thanks to the Electrum team for preparing the [original implementation][LegacyElectrumImplementation]
 that I used the algorithm for deterministic keys from.
 
-## Other Builds
-
-| Wercker | Shippable |
-|---------|-----------|
-
 [Apache2.0]: http://www.apache.org/licenses/LICENSE-2.0
 [SemVer2.0]: http://semver.org/spec/v2.0.0.html
 [LegacyElectrumImplementation]: https://github.com/spesmilo/electrum/blob/438bc94dcedcede8aa657d0b162a888f78f7ea01/lib/account.py
