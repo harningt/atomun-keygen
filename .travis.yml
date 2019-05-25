@@ -1,5 +1,9 @@
 language: java
 
+branches:
+    except:
+        - /^dependabot/
+
 sudo: false
 
 jdk:
