@@ -32,7 +32,7 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '28.1-android'
 
     compile 'net.jcip:jcip-annotations:1.0'
-    compile 'com.github.spotbugs:spotbugs-annotations:4.0.0-beta3'
+    compile 'com.github.spotbugs:spotbugs-annotations:4.0.0-beta4'
     compile 'com.google.code.findbugs:jsr305:3.0.2'
 
     compile 'org.bouncycastle:bcprov-jdk15on:1.63'
