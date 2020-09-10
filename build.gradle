@@ -36,7 +36,7 @@ dependencies {
     compile 'com.github.spotbugs:spotbugs-annotations:4.0.0-beta4'
     compile 'com.google.code.findbugs:jsr305:3.0.2'
 
-    compile 'org.bouncycastle:bcprov-jdk15on:1.65.01'
+    compile 'org.bouncycastle:bcprov-jdk15on:1.66'
 
     testCompile 'org.codehaus.groovy:groovy:3.0.5'
     testCompile 'org.spockframework:spock-core:2.0-groovy-3.0-SNAPSHOT'
