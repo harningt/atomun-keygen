@@ -41,7 +41,7 @@ dependencies {
     testCompile 'org.codehaus.groovy:groovy:3.0.6'
     testCompile 'org.spockframework:spock-core:2.0-groovy-3.0-SNAPSHOT'
     testCompile 'net.trajano.caliper:caliper:1.2.1'
-    testCompile 'org.yaml:snakeyaml:1.27'
+    testCompile 'org.yaml:snakeyaml:1.28'
 }
 
 javadoc {
